@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>PacketSentry IDS Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <h1>PacketSentry IDS Dashboard</h1>
+
+    <div class="cards">
+
+        <div class="card">
+            <h2>Total Alerts</h2>
+            <p>{{ total_alerts }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Critical Alerts</h2>
+            <p class="critical">{{ critical_alerts }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Top Attacker</h2>
+            <p>{{ top_attacker }}</p>
+        </div>
+
+    </div>
+
+    <div class="chart-container">
+
+        <canvas id="severityChart"></canvas>
+
+    </div>
+
+    <div class="table-container">
+
+        <h2>Real Attack Alerts</h2>
+
+        <table>
+
+            <tr>
+                <th>ID</th>
+                <th>Attacker IP</th>
+                <th>Ports Scanned</th>
+                <th>Severity</th>
+                <th>Timestamp</th>
+            </tr>
+
+            {% for alert in alerts %}
+
+            <tr>
+
+                <td>{{ alert[0] }}</td>
+                <td>{{ alert[1] }}</td>
+                <td>{{ alert[2] }}</td>
+
+                <td class="{{ alert[3].lower() }}">
+                    {{ alert[3] }}
+                </td>
+
+                <td>{{ alert[4] }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    <script>
+
+        const alerts = {{ alerts | tojson }};
+
+        let critical = 0;
+        let high = 0;
+        let medium = 0;
+        let low = 0;
+
+        alerts.forEach(alert => {
+
+            if (alert[3] === "CRITICAL")
+                critical++;
+
+            else if (alert[3] === "HIGH")
+                high++;
+
+            else if (alert[3] === "MEDIUM")
+                medium++;
+
+            else
+                low++;
+        });
+
+        new Chart(
+            document.getElementById("severityChart"),
+            {
+                type: "pie",
+
+                data: {
+
+                    labels: [
+                        "CRITICAL",
+                        "HIGH",
+                        "MEDIUM",
+                        "LOW"
+                    ],
+
+                    datasets: [{
+
+                        data: [
+                            critical,
+                            high,
+                            medium,
+                            low
+                        ],
+
+                        backgroundColor: [
+                            "#ff0000",
+                            "#ff8800",
+                            "#ffee00",
+                            "#00ff99"
+                        ]
+                    }]
+                }
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
